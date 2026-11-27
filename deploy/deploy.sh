@@ -7,7 +7,7 @@ SRC="${SRC:-$HOME/palestine-map-animation}"
 WEBROOT="${WEBROOT:-<webroot>}"
 export PATH="$HOME/.local/bin:$PATH"
 
-if [ -d "$SRC/.git" ]; then git -C "$SRC" pull --ff-only; else git clone --depth 1 "$REPO_URL" "$SRC"; fi
+if [ -d "$SRC/.git" ]; then git -C "$SRC" fetch --depth 1 origin main && git -C "$SRC" reset --hard origin/main; else git clone --depth 1 "$REPO_URL" "$SRC"; fi
 
 # Bangun docs dengan uv (tidak butuh root / python3-venv).
 command -v uvx >/dev/null || curl -LsSf https://astral.sh/uv/install.sh | sh
