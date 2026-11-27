@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Studio Peta Palestina '48</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans:ital,wght@0,400;0,600;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/*
+VOICE: alat kerja tim media — tenang, presisi, tanpa hiasan; peta adalah bintangnya.
+IDEA: meja kaca kartografer — panel instrumen di kiri, lembar peta yang menyala di kanan.
+PICTURE: kanvas peta besar yang langsung bisa digeser, di-zoom, dan diputar sebagai animasi.
+COLOUR and TYPE: putih/arang netral, satu aksen merah lokator Wikimedia; IBM Plex Sans untuk UI, Noto Sans + Noto Naskh Arabic di peta.
+LAYOUT: dua kolom (panel 360px + panggung), menumpuk di layar sempit: panggung dulu, lalu kontrol.
+*/
+:root{color-scheme:light dark;
+--bg:light-dark(#f4f4f2,#121314);--panel:light-dark(#ffffff,#1b1c1e);--ink:light-dark(#17181a,#ececea);--mute:light-dark(#5d6168,#a3a7ad);
+--line:light-dark(#dcdcd8,#2e3033);--soft:light-dark(#efefec,#25272a);--acc:#c12838;--acc-ink:#fff;--stage:light-dark(#e6e6e3,#0b0c0d)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;overflow-x:clip}
+.app{display:grid;grid-template-columns:360px minmax(0,1fr);height:100vh}
+.side{background:var(--panel);border-right:1px solid var(--line);overflow-y:auto;padding:16px 16px 40px}
+.side h1{font-size:20px;line-height:1.15;margin:0 0 2px;font-weight:700}
+.side .sub{color:var(--mute);font-size:13px;margin:0 0 14px}
+details{border-top:1px solid var(--line);padding:4px 0}
+summary{cursor:pointer;font-weight:600;padding:10px 0;list-style:none;display:flex;justify-content:space-between;align-items:center;min-height:44px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--mute);font-weight:400;font-size:18px}
+details[open]>summary::after{content:"–"}
+.sec{display:grid;gap:10px;padding-bottom:12px}
+.lbl{font-size:13px;color:var(--mute);margin-bottom:-4px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button,.btn{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--soft);color:var(--ink);border-radius:8px;padding:8px 11px;min-height:40px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.btn.pri{background:var(--acc);color:var(--acc-ink);border-color:var(--acc);font-weight:600}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row>*{flex:1 1 0}
+.chk{display:flex;align-items:center;gap:10px;font-size:14px;min-height:32px;cursor:pointer}
+.chk input{width:18px;height:18px;accent-color:var(--acc);flex:none}
+.chk.off{color:var(--mute);cursor:not-allowed}
+.chk small{color:var(--mute);margin-left:auto;font-size:12px}
+input[type=number],input[type=text],select{font:inherit;font-size:16px;width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);min-height:40px}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.field{display:grid;gap:4px;font-size:13px;color:var(--mute)}
+.colors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px}
+.colors label{display:flex;align-items:center;gap:8px;font-size:13px}
+.colors input{width:34px;height:28px;border:1px solid var(--line);border-radius:6px;padding:0;background:none;flex:none}
+.keys{display:grid;gap:8px}
+.key{border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:8px;cursor:pointer}
+.key[aria-current=true]{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+.key .top{display:flex;gap:8px;align-items:center}
+.key .num{font-weight:700;width:22px;flex:none}
+.key input[type=text]{min-height:34px;font-size:15px;padding:4px 8px}
+.key .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.key .grid .field input,.key .grid .field select{min-height:34px;font-size:14px;padding:4px 6px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:4px 9px;background:none;color:var(--mute);cursor:pointer;min-height:30px}
+.chip[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:#fff}
+.mini{font-size:12px;color:var(--mute)}
+.lbltable{max-height:320px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.lbltable table{width:100%;border-collapse:collapse;font-size:13px}
+.lbltable td{padding:4px;border-bottom:1px solid var(--line);vertical-align:middle}
+.lbltable input[type=text]{min-height:32px;font-size:14px;padding:3px 6px}
+.lbltable td:first-child{width:26px;text-align:center}
+.ar{font-family:"Noto Naskh Arabic",serif;direction:rtl}
+.main{display:grid;grid-template-rows:minmax(0,1fr) auto;background:var(--stage);min-height:0}
+.stage{position:relative;display:grid;place-items:center;padding:18px;min-height:0;overflow:hidden}
+.frame{position:relative;box-shadow:0 10px 40px rgba(0,0,0,.25);background:#000;touch-action:none;cursor:grab}
+.frame:active{cursor:grabbing}
+.frame canvas{display:block;width:100%;height:100%}
+.badge{position:absolute;left:10px;top:10px;font-size:12px;background:rgba(0,0,0,.6);color:#fff;padding:3px 8px;border-radius:6px;pointer-events:none}
+.zoomers{position:absolute;right:10px;top:10px;display:grid;gap:6px}
+.zoomers button{width:40px;height:40px;border-radius:8px;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:20px;cursor:pointer}
+.transport{display:flex;gap:12px;align-items:center;padding:10px 18px 14px;background:var(--panel);border-top:1px solid var(--line)}
+.transport .btn{flex:none}
+.transport .time{font-variant-numeric:tabular-nums;white-space:nowrap;font-size:14px;color:var(--mute);flex:none}
+.prog{display:none;gap:8px;align-items:center;font-size:13px}
+.prog.on{display:flex}
+.prog progress{flex:1;height:10px;accent-color:var(--acc)}
+.note{font-size:12px;color:var(--mute);line-height:1.45}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;z-index:9}
+.toast.on{opacity:1}
+@media (max-width:900px){
+ .app{grid-template-columns:minmax(0,1fr);height:auto}
+ .main{order:-1;height:62vh;position:sticky;top:0;z-index:2}
+ .side{border-right:0}
+}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side" id="side">
+ <h1>Studio Peta Palestina '48</h1>
+ <p class="sub">Framing dan animasi peta untuk video. Geser peta untuk memindah kamera, scroll untuk zoom. <a href="https://studio.komnaspalestina.org/docs/" target="_blank" rel="noopener">Buka panduan</a></p>
+
+ <details open><summary>Bingkai &amp; proyeksi</summary><div class="sec">
+  <div class="lbl">Rasio bingkai</div>
+  <div class="seg" id="frameSeg"></div>
+  <div class="row">
+   <label class="field">Resolusi<select id="resSel"><option value="1">Standar (1080)</option><option value="2">Ganda (4K)</option></select></label>
+   <label class="field">FPS<select id="fpsSel"><option>30</option><option>60</option><option>25</option></select></label>
+  </div>
+  <label class="chk"><input type="checkbox" id="safeChk" checked>Tampilkan safe zone Reels/TikTok <small>pratinjau saja</small></label>
+  <div class="lbl">Proyeksi</div>
+  <div class="seg" id="projSeg"></div>
+  <p class="note" id="projNote"></p>
+ </div></details>
+
+ <details open><summary>Kamera &amp; preset</summary><div class="sec">
+  <div class="row">
+   <label class="field">Bujur<input type="number" id="camLon" step="0.1"></label>
+   <label class="field">Lintang<input type="number" id="camLat" step="0.1"></label>
+   <label class="field">Lebar (km)<input type="number" id="camW" step="10" min="15"></label>
+  </div>
+  <label class="field">Lompat ke<select id="jumpSel"></select></label>
+  <div class="lbl">Preset animasi</div>
+  <div class="seg" id="presetSeg"></div>
+ </div></details>
+
+ <details open><summary>Keyframe</summary><div class="sec">
+  <div class="keys" id="keys"></div>
+  <div class="row">
+   <button class="btn" id="addKey">+ Tambah dari tampilan</button>
+   <button class="btn" id="setKey">Simpan kamera ke terpilih</button>
+  </div>
+  <div class="row">
+   <button class="btn" id="upKey">Naik</button><button class="btn" id="downKey">Turun</button><button class="btn" id="delKey">Hapus</button>
+  </div>
+  <p class="note">Tiap keyframe punya durasi transisi masuk, lama diam, dan sorotan yang aktif. Sorotan yang menyala di tengah transisi digambar bertahap (garis dulu, lalu isian).</p>
+ </div></details>
+
+ <details><summary>Layer</summary><div class="sec" id="layerBox"></div></details>
+
+ <details><summary>Tema &amp; warna</summary><div class="sec">
+  <div class="seg" id="themeSeg"></div>
+  <div class="colors" id="colorBox"></div>
+  <label class="field">Skala ukuran label <span id="lsVal"></span><input type="range" id="labelScale" min="0.6" max="1.8" step="0.05"></label>
+  <label class="field">Ketebalan garis <span id="lwVal"></span><input type="range" id="lineScale" min="0.5" max="2.5" step="0.05"></label>
+ </div></details>
+
+ <details><summary>Label &amp; nama tempat</summary><div class="sec">
+  <label class="chk"><input type="checkbox" id="arChk" checked>Tampilkan nama Arab di bawah nama Indonesia</label>
+  <input type="text" id="lblFilter" placeholder="Cari label…">
+  <div class="lbltable"><table><tbody id="lblBody"></tbody></table></div>
+  <p class="note">Centang untuk menampilkan. Ubah teks langsung di kolom; perubahan tersimpan di preset.</p>
+ </div></details>
+
+ <details open><summary>Ekspor</summary><div class="sec">
+  <label class="chk"><input type="checkbox" id="transChk">Latar transparan (tanpa laut) untuk PNG/SVG</label>
+  <label class="chk"><input type="checkbox" id="svgTextChk">Sertakan teks label di SVG</label>
+  <div class="row"><button class="btn" id="pngBtn">PNG frame ini</button><button class="btn" id="svgBtn">SVG frame ini</button></div>
+  <button class="btn" id="zipBtn">SVG per layer untuk Canva (.zip)</button>
+  <button class="btn pri" id="vidBtn">Render video di browser</button>
+  <div class="prog" id="prog"><progress id="progBar" max="1" value="0"></progress><span id="progTxt"></span><button class="btn" id="cancelBtn">Batal</button></div>
+  <div class="row"><button class="btn" id="presetSave">Simpan preset (.json)</button><button class="btn" id="presetCopy">Salin preset</button></div>
+  <label class="btn" style="text-align:center">Buka preset… <input type="file" id="presetLoad" accept=".json,application/json" hidden></label>
+  <p class="note" id="vidNote"></p>
+  <p class="note">Render di PC: simpan preset lalu kirim ke Claude di chat, nanti dirender dengan raea memakai data peta yang sama.</p>
+  <p class="note">Data: Natural Earth 1:10m (domain publik), versi sudut pandang Palestina. Palestina '48 = wilayah Mandat; Dataran Tinggi Golan dihitung wilayah Suriah.</p>
+ </div></details>
+</aside>
+
+<main class="main">
+ <div class="stage" id="stage">
+  <div class="frame" id="frame"><canvas id="cv"></canvas><span class="badge" id="badge">Mode edit</span>
+   <div class="zoomers"><button id="zin" aria-label="Perbesar">+</button><button id="zout" aria-label="Perkecil">−</button></div></div>
+ </div>
+ <div class="transport">
+  <button class="btn pri" id="playBtn">Putar</button>
+  <input type="range" id="scrub" min="0" max="1" step="0.001" value="0" aria-label="Linimasa">
+  <span class="time" id="timeTxt">0:00.0 / 0:00.0</span>
+ </div>
+</main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mp4-muxer@5.2.1/build/mp4-muxer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/webm-muxer@5.1.3/build/webm-muxer.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

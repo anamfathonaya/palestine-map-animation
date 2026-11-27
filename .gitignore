@@ -1,0 +1,7 @@
+site/
+.cache/
+node_modules/
+tools/data/input/
+tools/data/build/
+__pycache__/
+.DS_Store
