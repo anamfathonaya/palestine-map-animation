@@ -4,7 +4,11 @@
 set -euo pipefail
 REPO_URL="${REPO_URL:-https://github.com/anamfathonaya/palestine-map-animation.git}"
 SRC="${SRC:-$HOME/palestine-map-animation}"
-WEBROOT="${WEBROOT:-<webroot>}"
+# Lokasi folder situs TIDAK disimpan di repo. Isi di VPS sekali:
+#   mkdir -p ~/.config/studio-peta && echo 'WEBROOT=/path/ke/folder/situs' > ~/.config/studio-peta/deploy.env
+CONF="${CONF:-$HOME/.config/studio-peta/deploy.env}"
+[ -f "$CONF" ] && . "$CONF"
+: "${WEBROOT:?Set WEBROOT di $CONF atau sebagai variabel lingkungan}"
 export PATH="$HOME/.local/bin:$PATH"
 
 if [ -d "$SRC/.git" ]; then git -C "$SRC" fetch --depth 1 origin main && git -C "$SRC" reset --hard origin/main; else git clone --depth 1 "$REPO_URL" "$SRC"; fi

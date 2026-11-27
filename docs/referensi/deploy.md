@@ -15,7 +15,14 @@ Dari mesin yang punya akses SSH ke VPS:
 ssh <user>@<vps> 'bash -s' < deploy/deploy.sh
 ```
 
-Skrip ini menarik versi terbaru repo ke `~/palestine-map-animation`, membangun dokumentasi dengan `uvx zensical` ([uv](https://docs.astral.sh/uv/) dipasang otomatis di `~/.local/bin` tanpa root), lalu menyalin hasilnya ke `<webroot>`.
+Skrip ini menarik versi terbaru repo ke `~/palestine-map-animation`, membangun dokumentasi dengan `uvx zensical` ([uv](https://docs.astral.sh/uv/) dipasang otomatis di `~/.local/bin` tanpa root), lalu menyalin hasilnya ke folder situs (`WEBROOT`).
+
+Lokasi folder situs tidak disimpan di repo. Isi sekali di VPS:
+
+```bash
+mkdir -p ~/.config/studio-peta
+echo 'WEBROOT=<webroot>' > ~/.config/studio-peta/deploy.env
+```
 
 ## Prasyarat satu kali
 
