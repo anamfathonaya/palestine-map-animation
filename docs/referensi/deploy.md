@@ -15,7 +15,7 @@ Dari mesin yang punya akses SSH ke VPS:
 ssh <user>@<vps> 'bash -s' < deploy/deploy.sh
 ```
 
-Skrip ini menarik versi terbaru repo ke `~/palestine-map-animation`, membangun dokumentasi di virtualenv `~/.venvs/zensical`, lalu menyalin hasilnya ke `<webroot>`.
+Skrip ini menarik versi terbaru repo ke `~/palestine-map-animation`, membangun dokumentasi dengan `uvx zensical` ([uv](https://docs.astral.sh/uv/) dipasang otomatis di `~/.local/bin` tanpa root), lalu menyalin hasilnya ke `<webroot>`.
 
 ## Prasyarat satu kali
 
